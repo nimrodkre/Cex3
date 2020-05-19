@@ -141,6 +141,93 @@ Node *findFatherOfData(RBTree *tree, const void *data)
     return NULL;
 }
 
+Node *getUncle(Node *son)
+{
+    Node *parent = son->parent;
+    if (parent == NULL)
+    {
+        return NULL;
+    }
+    Node *grandpa = parent->parent;
+    Node *uncle = NULL;
+    if (grandpa != NULL)
+    {
+        if (grandpa->left == parent)
+        {
+            uncle = grandpa->right;
+        }
+        else
+        {
+            uncle = grandpa->left;
+        }
+    }
+    return uncle;
+}
+
+void fixInsert(RBTree *tree, Node* node)
+{
+    Node *father = NULL;
+    Node *grandpa = NULL;
+    while ((node != tree->root) && (node->color != BLACK) && (node->parent->color == RED))
+    {
+        father = node->parent;
+        grandpa = father->parent;
+        if (father == grandpa->left)
+        {
+            Node *uncle = grandpa->right;
+            if ((uncle != NULL) && (uncle->color == RED))
+            {
+                grandpa->color = RED;
+                father->color = BLACK;
+                uncle->color = BLACK;
+                node = grandpa;
+            }
+            else
+            {
+                if (node == father->right)
+                {
+                    rotateLeft(tree, father);
+                    node = father;
+                    father = node->parent;
+                }
+
+                rotateRight(tree, grandpa);
+                Color temp = father->color;
+                father->color = grandpa->color;
+                grandpa->color = temp;
+                node = father;
+            }
+        }
+        else
+        {
+            Node *uncle = grandpa->left;
+            if ((uncle != NULL) && (uncle->color == RED))
+            {
+                grandpa->color = RED;
+                father->color = BLACK;
+                uncle->color = BLACK;
+                node = grandpa;
+            }
+            else
+            {
+                if (node == father->left)
+                {
+                    rotateRight(tree, father);
+                    node = father;
+                    father = node->parent;
+                }
+
+                rotateLeft(tree, grandpa);
+                Color temp = father->color;
+                father->color = grandpa->color;
+                grandpa->color = temp;
+                node = father;
+            }
+        }
+    }
+    tree->root->color = BLACK;
+}
+
 int insertToRBTree(RBTree *tree, void *data)
 {
     if (RBTreeContains(tree, data) == true)
@@ -161,7 +248,6 @@ int insertToRBTree(RBTree *tree, void *data)
         tree->root = node;
         return true;
     }
-
     // insert node to parent
     node->parent = parent;
     if (tree->compFunc(parent->data, node->data) < 0)
@@ -180,4 +266,13 @@ int insertToRBTree(RBTree *tree, void *data)
     }
 
     // case 3 - dad is red and uncle is red
+    Node *grandpa = parent->parent;
+    Node *uncle = getUncle(node);
+    if (uncle != NULL && uncle->color == RED)
+    {
+        parent->color = BLACK;
+        uncle->color = BLACK;
+        grandpa->color = RED;
+
+    }
 }
