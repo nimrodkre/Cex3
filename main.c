@@ -76,12 +76,12 @@ int **getProducts()
     products[4] = (int *) malloc(sizeof(int));
     products[5] = (int *) malloc(sizeof(int));
 
-    *products[0]= 1499;
-    *products[1] = 199;
-    *products[2] = 599;
-    *products[3] = 499;
-    *products[4] = 299;
-    *products[5] = 199;
+    *products[0]= 8;
+    *products[1] = 2;
+    *products[2] = 4;
+    *products[3] = 10;
+    *products[4] = 25;
+    *products[5] = 7;
 
     return products;
 
@@ -109,10 +109,12 @@ int main()
     int **products = getProducts();
     RBTree *tree = newRBTree(productComparatorByName, productFree);
     insertToRBTree(tree, products[2]);
+    insertToRBTree(tree, products[1]);
     insertToRBTree(tree, products[3]);
-    insertToRBTree(tree, products[4]);
+    insertToRBTree(tree, products[5]);
     insertToRBTree(tree, products[0]);
-    deleteFromRBTree(tree, products[4]);
+    //insertToRBTree(tree, products[1]);
+    deleteFromRBTree(tree, products[2]);
     printRBTree(tree->root);
 
 
