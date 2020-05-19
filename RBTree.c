@@ -259,3 +259,138 @@ int insertToRBTree(RBTree *tree, void *data)
     tree->size += 1;
     return true;
 }
+
+void swapValues(Node *node1, Node *node2)
+{
+    int temp = node1->data;
+    node1->data = node2->data;
+    node2->data = temp;
+}
+
+void swapColors(Node *node1, Node *node2)
+{
+    int temp = node1->color;
+    node1->data = node2->color;
+    node2->data = temp;
+}
+
+Node *getBrother(Node *node)
+{
+    Node *father = node->parent;
+    if (father == NULL)
+    {
+        return NULL;
+    }
+    if (father->left == node)
+    {
+        return father->right;
+    }
+    return father->left;
+}
+
+void delCase6(Node *node);
+
+void delCase5(Node *node);
+
+void delCase4(Node *node);
+
+void delCase3(Node *node)
+{
+    Node *brother = getBrother(node);
+    if ((node->parent->color == BLACK) && ((brother == NULL) || brother->color == BLACK)
+        && ((brother->left == NULL) || (brother->left->color == BLACK))
+        && ((brother->right == NULL) || (brother->right->color == BLACK)))
+    {
+        brother->color = RED;
+        delCase1(node);
+    }
+    else
+    {
+        delCase4(node);
+    }
+}
+
+void delCase2(Node *node)
+{
+    Node *brother = getBrother(node);
+    if (brother == NULL)
+    {
+        return;
+    }
+
+    if (brother->color == RED)
+    {
+        node->parent->color = RED;
+        brother->color = BLACK;
+        if (node  == node->parent->left)
+        {
+            rotateLeft(node->parent);
+        }
+        else
+        {
+            rotateRight(node->parent);
+        }
+    }
+    delCase3(node);
+}
+
+void delCase1(Node *node)
+{
+    if (node->parent != NULL)
+    {
+        delCase2(node);
+    }
+}
+
+void replaceNode(Node *node, Node *child)
+{
+    child->parent = node->parent;
+    if (node == node->parent->left)
+    {
+        node->parent->left = child;
+    }
+    else
+    {
+        node->parent->right = child;
+    }
+}
+
+void deleteChild(Node *node)
+{
+    Node *child = NULL;
+    if (node->right != NULL)
+    {
+        child = node->right;
+    }
+    else if (node->left != NULL)
+    {
+        child = node->left;
+    }
+    else
+    {
+        return;
+    }
+
+    replaceNode(node, child);
+    if (node->color == BLACK)
+    {
+        if (child->color == RED)
+        {
+             child->color = BLACK;
+        }
+        else
+        {
+            delCase1(child);
+        }
+    }
+    free(node);
+}
+
+int deleteFromRBTree(RBTree *tree, void *data)
+{
+    if (!RBTreeContains(tree, data))
+    {
+        return false;
+    }
+
+}
