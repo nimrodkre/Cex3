@@ -227,17 +227,25 @@ int insertToRBTree(RBTree *tree, void *data)
     {
         return false;
     }
-    Node *parent = findFatherOfData(tree, data);
-    // insert node to parent
-    node->parent = parent;
-    if (tree->compFunc(parent->data, node->data) < 0)
+    Node *father = findFatherOfData(tree, data);
+    if (father == NULL)
     {
-        parent->right = node;
+        node->color = BLACK;
+        tree->root = node;
+        tree->size += 1;
+        return true;
+    }
+    // insert
+    if (tree->compFunc(father->data, node->data) < 0)
+    {
+        father->right = node;
     }
     else
     {
-        parent->left = node;
+        father->left = node;
     }
 
     fixInsert(tree, node);
+    tree->size += 1;
+    return true;
 }
