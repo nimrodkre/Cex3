@@ -262,15 +262,8 @@ int insertToRBTree(RBTree *tree, void *data)
 
 void swapValues(Node *node1, Node *node2)
 {
-    int temp = node1->data;
+    void *temp = node1->data;
     node1->data = node2->data;
-    node2->data = temp;
-}
-
-void swapColors(Node *node1, Node *node2)
-{
-    int temp = node1->color;
-    node1->data = node2->color;
     node2->data = temp;
 }
 
@@ -288,58 +281,33 @@ Node *getBrother(Node *node)
     return father->left;
 }
 
-void delCase6(Node *node);
-
-void delCase5(Node *node);
-
-void delCase4(Node *node);
-
-void delCase3(Node *node)
+Node *successor(Node *node)
 {
-    Node *brother = getBrother(node);
-    if ((node->parent->color == BLACK) && ((brother == NULL) || brother->color == BLACK)
-        && ((brother->left == NULL) || (brother->left->color == BLACK))
-        && ((brother->right == NULL) || (brother->right->color == BLACK)))
+    Node *succ = node;
+    while (succ->left != NULL)
     {
-        brother->color = RED;
-        delCase1(node);
+        succ = succ->left;
     }
-    else
-    {
-        delCase4(node);
-    }
+    return succ;
 }
 
-void delCase2(Node *node)
+Node *BSTLikeReplace(Node *node)
 {
-    Node *brother = getBrother(node);
-    if (brother == NULL)
+    if (node->left != NULL && node->right != NULL)
     {
-        return;
+        return successor(node->right);
     }
 
-    if (brother->color == RED)
+    if (node->left == NULL && node->right == NULL)
     {
-        node->parent->color = RED;
-        brother->color = BLACK;
-        if (node  == node->parent->left)
-        {
-            rotateLeft(node->parent);
-        }
-        else
-        {
-            rotateRight(node->parent);
-        }
+        return NULL;
     }
-    delCase3(node);
-}
 
-void delCase1(Node *node)
-{
-    if (node->parent != NULL)
+    if (node->left != NULL)
     {
-        delCase2(node);
+        return node->left;
     }
+    return node->right;
 }
 
 void replaceNode(Node *node, Node *child)
@@ -355,35 +323,190 @@ void replaceNode(Node *node, Node *child)
     }
 }
 
-void deleteChild(Node *node)
+void fixBothBlack(RBTree *tree, Node *node)
 {
-    Node *child = NULL;
-    if (node->right != NULL)
-    {
-        child = node->right;
-    }
-    else if (node->left != NULL)
-    {
-        child = node->left;
-    }
-    else
+    if (node == tree->root)
     {
         return;
     }
 
-    replaceNode(node, child);
-    if (node->color == BLACK)
+    Node *brother = getBrother(node);
+    Node *father = node->parent;
+
+    if (brother == NULL)
     {
-        if (child->color == RED)
+        fixBothBlack(tree, father);
+    }
+    else
+    {
+        if (brother->color == RED)
         {
-             child->color = BLACK;
+            father->color = RED;
+            brother->color = BLACK;
+            if (brother == brother->parent->left)
+            {
+                rotateRight(father);
+            }
+            else
+            {
+                rotateLeft(father);
+            }
+            fixBothBlack(tree, node);
         }
         else
         {
-            delCase1(child);
+            if ((brother->left != NULL && brother->left->color == RED) ||
+                    (brother->right != NULL && brother->right->color == RED))
+            {
+                if (brother->left != NULL && brother->left->color == RED)
+                {
+                    if (brother == brother->parent->left)
+                    {
+                        brother->left->color = brother->color;
+                        brother->color = father->color;
+                        rotateRight(father);
+                    }
+                    else
+                    {
+                        brother->left->color = father->color;
+                        rotateRight(brother);
+                        rotateLeft(father);
+                    }
+                }
+                else
+                {
+                    if (brother == brother->parent->left)
+                    {
+                        brother->right->color = father->color;
+                        rotateLeft(brother);
+                        rotateRight(father);
+                    }
+                    else
+                    {
+                        brother->right->color = brother->color;
+                        brother->color = father->color;
+                        rotateLeft(father);
+                    }
+                }
+                father->color = BLACK;
+            }
+            else
+            {
+                brother->color = RED;
+                if (father->color == BLACK)
+                {
+                    fixBothBlack(tree, father);
+                }
+                else
+                {
+                    father->color = BLACK;
+                }
+            }
         }
     }
-    free(node);
+}
+
+void deleteNode(RBTree *tree, Node *node)
+{
+    Node *replace = BSTLikeReplace(node);
+    int bothBlack = 0;
+    if ((node->color == BLACK) && (replace != NULL && replace->color == BLACK))
+    {
+        bothBlack = 1;
+    }
+    Node *father = node->parent;
+    Node *brother = getBrother(node);
+
+    if (replace == NULL)
+    {
+        if (node == tree->root)
+        {
+            tree->root = NULL;
+        }
+        else
+        {
+            if (bothBlack == 1)
+            {
+                fixBothBlack(tree, node);
+            }
+            else
+            {
+                if (brother != NULL)
+                {
+                    brother->color = RED;
+                }
+            }
+
+            if (node == father->left)
+            {
+                father->left = NULL;
+            }
+            else
+            {
+                father->right = NULL;
+            }
+        }
+
+        free(node);
+        return;
+    }
+
+    if (node->left == NULL || node->right == NULL)
+    {
+        if (node == tree->root)
+        {
+            node->data = replace->data;
+            node->left = NULL;
+            node->right = NULL;
+            free(replace);
+        }
+        else
+        {
+            if(node == father->left)
+            {
+                father->left = replace;
+            }
+            else
+            {
+                father->right = replace;
+            }
+            free(node);
+            replace->parent = father;
+            if (bothBlack == 1)
+            {
+                fixBothBlack(tree, replace);
+            }
+            else
+            {
+                replace->color = BLACK;
+            }
+        }
+        return;
+    }
+
+    swapValues(node, replace);
+    deleteNode(tree, replace);
+}
+
+Node *getNode(RBTree *tree, void *data)
+{
+    Node *root = tree->root;
+    while (root != NULL)
+    {
+        if (root->data == data)
+        {
+            return root;
+        }
+        if (tree->compFunc(root->data, data) < 0)
+        {
+            root = root->right;
+        }
+        else
+        {
+            root = root->left;
+        }
+    }
+    return NULL;
 }
 
 int deleteFromRBTree(RBTree *tree, void *data)
@@ -392,5 +515,7 @@ int deleteFromRBTree(RBTree *tree, void *data)
     {
         return false;
     }
-
+    Node *delNode = getNode(tree, data);
+    deleteNode(tree, delNode);
+    return 1;
 }
