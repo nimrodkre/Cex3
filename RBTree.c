@@ -81,6 +81,31 @@ void rotateLeft(RBTree *tree, Node *pivot)
     pivot->parent = son;
 }
 
+void rotateRight(RBTree *tree, Node *pivot)
+{
+    Node *son = pivot->left;
+    pivot->left = son->right;
+    if (pivot->left != NULL)
+    {
+        pivot->left->parent = pivot;
+    }
+    son->parent = pivot->parent;
+    if (pivot->parent == NULL)
+    {
+        tree->root = son;
+    }
+    else if (pivot == pivot->parent->left)
+    {
+        pivot->parent->left = son;
+    }
+    else
+    {
+        pivot->parent->right = son;
+    }
+    son->right = pivot;
+    pivot->parent = son;
+}
+
 /**
  * finds the parent of the data which we will be inserting
  * @param tree - the root of the tree
