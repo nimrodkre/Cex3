@@ -56,54 +56,63 @@ Node *CreateNode(void *data)
     return node;
 }
 
-void rotateLeft(RBTree *tree, Node *pivot)
+void rotateLeft(Node *pivot)
 {
     Node *son = pivot->right;
+    Node *parent = pivot->parent;
+    if (parent == NULL)
+    {
+        return;
+    }
     pivot->right = son->left;
+    son->left = pivot;
+    pivot->parent = son;
     if (pivot->right != NULL)
     {
         pivot->right->parent = pivot;
     }
-    son->parent = pivot->parent;
-    if (pivot->parent == NULL)
+
+    if (parent != NULL)
     {
-        tree->root = son;
+        if (pivot == parent->left)
+        {
+            pivot->left = son;
+        }
+        else if (pivot == parent->right)
+        {
+            parent->right = son;
+        }
     }
-    else if (pivot == pivot->parent->left)
-    {
-        pivot->parent->left = son;
-    }
-    else
-    {
-        pivot->parent->right = son;
-    }
-    son->left = pivot;
-    pivot->parent = son;
+    son->parent = parent;
 }
 
-void rotateRight(RBTree *tree, Node *pivot)
+void rotateRight(Node *pivot)
 {
     Node *son = pivot->left;
+    Node *parent = pivot->parent;
+    if (son == NULL)
+    {
+        return;
+    }
     pivot->left = son->right;
+    son->right = pivot;
+    pivot->parent = son;
     if (pivot->left != NULL)
     {
         pivot->left->parent = pivot;
     }
-    son->parent = pivot->parent;
-    if (pivot->parent == NULL)
+    if (parent != NULL)
     {
-        tree->root = son;
+        if (pivot == parent->left)
+        {
+            parent->left = son;
+        }
+        else if (pivot == parent->right)
+        {
+            parent->right = son;
+        }
     }
-    else if (pivot == pivot->parent->left)
-    {
-        pivot->parent->left = son;
-    }
-    else
-    {
-        pivot->parent->right = son;
-    }
-    son->right = pivot;
-    pivot->parent = son;
+    son->parent = parent;
 }
 
 /**
@@ -192,23 +201,23 @@ void fixInsert(RBTree *tree, Node* node)
     //case 4
     if (node == father->right && father == grandpa->left)
     {
-        rotateLeft(tree, father);
+        rotateLeft(father);
         node = node->left;
     }
     else if (node == father->left && father == grandpa->right)
     {
-        rotateRight(tree, father);
+        rotateRight(father);
         node = node->right;
     }
 
     //4 2
     if (node == father->left)
     {
-        rotateRight(tree, grandpa);
+        rotateRight(grandpa);
     }
     else
     {
-        rotateLeft(tree, grandpa);
+        rotateLeft(grandpa);
     }
     father->color = BLACK;
     grandpa->color = RED;
@@ -244,6 +253,7 @@ int insertToRBTree(RBTree *tree, void *data)
     {
         father->left = node;
     }
+    node->parent = father;
 
     fixInsert(tree, node);
     tree->size += 1;
