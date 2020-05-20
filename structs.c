@@ -14,7 +14,7 @@ int stringCompare(const void *a, const void *b)
 {
     char *a1 = (char *)a;
     char *b1 = (char *)b;
-    return strcmp(a, b);
+    return strcmp(a1, b1);
 }
 
 int concatenate(const void *word, void *pConcatenated)

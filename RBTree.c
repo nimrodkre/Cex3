@@ -115,65 +115,6 @@ void rotateRight2(RBTree *tree, Node *pivot)
     son->right = pivot;
 }
 
-void rotateLeft(Node *pivot)
-{
-    Node *son = pivot->right;
-    Node *parent = pivot->parent;
-    if (son == NULL)
-    {
-        return;
-    }
-    pivot->right = son->left;
-    son->left = pivot;
-    pivot->parent = son;
-    if (pivot->right != NULL)
-    {
-        pivot->right->parent = pivot;
-    }
-
-    if (parent != NULL)
-    {
-        if (pivot == parent->left)
-        {
-            parent->left = son;
-        }
-        else if (pivot == parent->right)
-        {
-            parent->right = son;
-        }
-    }
-    son->parent = parent;
-}
-
-void rotateRight(Node *pivot)
-{
-    Node *son = pivot->left;
-    Node *parent = pivot->parent;
-    if (son == NULL)
-    {
-        return;
-    }
-    pivot->left = son->right;
-    son->right = pivot;
-    pivot->parent = son;
-    if (pivot->left != NULL)
-    {
-        pivot->left->parent = pivot;
-    }
-    if (parent != NULL)
-    {
-        if (pivot == parent->left)
-        {
-            parent->left = son;
-        }
-        else if (pivot == parent->right)
-        {
-            parent->right = son;
-        }
-    }
-    son->parent = parent;
-}
-
 /**
  * finds the parent of the data which we will be inserting
  * @param tree - the root of the tree
@@ -243,38 +184,38 @@ void insertCase3(RBTree *tree, Node *node)
     fixInsert(tree, grandpa);
 }
 
-void insertCase4_2(Node *node)
+void insertCase4_2(RBTree *tree, Node *node)
 {
     Node *father = node->parent;
     Node *grandpa = father->parent;
 
     if (node == father->left)
     {
-        rotateRight(grandpa);
+        rotateRight2(tree, grandpa);
     }
     else
     {
-        rotateLeft(grandpa);
+        rotateLeft2(tree, grandpa);
     }
     father->color = BLACK;
     grandpa->color = RED;
 }
 
-void insertCase4(Node *node)
+void insertCase4(RBTree *tree, Node *node)
 {
     Node *father = node->parent;
     Node *grandpa = father->parent;
     if (node == father->right && father == grandpa->left)
     {
-        rotateLeft(father);
+        rotateLeft2(tree, father);
         node = node->left;
     }
     else if (node == father->left && father == grandpa->right)
     {
-        rotateRight(father);
+        rotateRight2(tree, father);
         node = node->right;
     }
-    insertCase4_2(node);
+    insertCase4_2(tree, node);
 }
 
 void fixInsert(RBTree *tree, Node* node)
@@ -296,7 +237,7 @@ void fixInsert(RBTree *tree, Node* node)
         insertCase3(tree, node);
         return;
     }
-    insertCase4(node);
+    insertCase4(tree, node);
 
 }
 
@@ -479,7 +420,7 @@ void fixBothBlack(RBTree *tree, Node *node)
 
 void freeNode(RBTree *tree, Node *node)
 {
-    tree->freeFunc(node->data);
+    //tree->freeFunc(node->data);
     free(node);
 }
 
