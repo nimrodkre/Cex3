@@ -148,7 +148,7 @@ int main()
     insertToRBTree(tree, products[3]);
     insertToRBTree(tree, products[4]);
     insertToRBTree(tree, products[0]);
-    viewTree(tree, func);
+    //viewTree(tree, func);
     int i = 0;
     for (i = 0; i < 6; i++)
     {

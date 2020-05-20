@@ -7,6 +7,12 @@
 
 void fixInsert(RBTree *tree, Node* node);
 
+/**
+ * Builds a new RedBlack Tree object
+ * @param compFunc The compare function
+ * @param freeFunc the free function
+ * @return The new RBTreeFunction - user must call free
+ */
 RBTree *newRBTree(CompareFunc compFunc, FreeFunc freeFunc)
 {
     RBTree *tree = (RBTree *)calloc(1, sizeof(RBTree));
@@ -21,6 +27,12 @@ RBTree *newRBTree(CompareFunc compFunc, FreeFunc freeFunc)
     return tree;
 }
 
+/**
+ * Checks that the given tree contains the data received
+ * @param tree the RBTree
+ * @param data the data to check if in the tree
+ * @return 1 if in else 0
+ */
 int RBTreeContains(const RBTree *tree, const void *data)
 {
     if (tree == NULL || data == NULL)
@@ -48,6 +60,11 @@ int RBTreeContains(const RBTree *tree, const void *data)
     return false;
 }
 
+/**
+ * Creates a node with the given data
+ * @param data the data of the node
+ * @return the new node, in HEAP!!!!
+ */
 Node *CreateNode(void *data)
 {
     Node *node = (Node *)calloc(1, sizeof(Node));
@@ -63,7 +80,12 @@ Node *CreateNode(void *data)
     return node;
 }
 
-void rotationChangePlace(Node *pivot, Node *newParent)
+/**
+ * changes the places of both of the nodes in the tee
+ * @param pivot the first node
+ * @param newParent the new parent of the pivot
+ */
+void ChangePlaces(Node *pivot, Node *newParent)
 {
     if (pivot->parent != NULL)
     {
@@ -80,7 +102,12 @@ void rotationChangePlace(Node *pivot, Node *newParent)
     pivot->parent = newParent;
 }
 
-void rotateLeft2(RBTree *tree, Node *pivot)
+/**
+ * Rotate the tree to the left
+ * @param tree our tree
+ * @param pivot pivot spot of the rotation
+ */
+void rotateLeft(RBTree *tree, Node *pivot)
 {
     Node *son = pivot->right;
     if (pivot == tree->root)
@@ -88,7 +115,7 @@ void rotateLeft2(RBTree *tree, Node *pivot)
         tree->root = son;
     }
 
-    rotationChangePlace(pivot, son);
+    ChangePlaces(pivot, son);
     pivot->right = son->left;
     if (son->left != NULL)
     {
@@ -97,7 +124,12 @@ void rotateLeft2(RBTree *tree, Node *pivot)
     son->left = pivot;
 }
 
-void rotateRight2(RBTree *tree, Node *pivot)
+/**
+ * rotation to the right
+ * @param tree the RBTree
+ * @param pivot the pivot on which to rotate the tree to the right
+ */
+void rotateRight(RBTree *tree, Node *pivot)
 {
     Node *son = pivot->left;
 
@@ -106,7 +138,7 @@ void rotateRight2(RBTree *tree, Node *pivot)
         tree->root = son;
     }
 
-    rotationChangePlace(pivot, son);
+    ChangePlaces(pivot, son);
     pivot->left = son->right;
     if (son->right != NULL)
     {
@@ -150,6 +182,11 @@ Node *findFatherOfData(RBTree *tree, const void *data)
     return NULL;
 }
 
+/**
+ * getst the uncle of the given node
+ * @param son the node of which to get its uncle
+ * @return uncle
+ */
 Node *getUncle(Node *son)
 {
     Node *parent = son->parent;
@@ -173,6 +210,11 @@ Node *getUncle(Node *son)
     return uncle;
 }
 
+/**
+ * Insert case for when the dad is red and uncle is red
+ * @param tree the tree on which we will insert
+ * @param node the node to enter
+ */
 void insertCase3(RBTree *tree, Node *node)
 {
     Node *father = node->parent;
@@ -184,6 +226,11 @@ void insertCase3(RBTree *tree, Node *node)
     fixInsert(tree, grandpa);
 }
 
+/**
+ * AFter case 4 the node isn't in the correct location and we must fix it
+ * @param tree the tree to insert to
+ * @param node our node to insert
+ */
 void insertCase4_2(RBTree *tree, Node *node)
 {
     Node *father = node->parent;
@@ -191,42 +238,54 @@ void insertCase4_2(RBTree *tree, Node *node)
 
     if (node == father->left)
     {
-        rotateRight2(tree, grandpa);
+        rotateRight(tree, grandpa);
     }
     else
     {
-        rotateLeft2(tree, grandpa);
+        rotateLeft(tree, grandpa);
     }
     father->color = BLACK;
     grandpa->color = RED;
 }
 
+/**
+ * Parent is red and the uncle is black
+ * @param tree the tree to change
+ * @param node the node to insert
+ */
 void insertCase4(RBTree *tree, Node *node)
 {
     Node *father = node->parent;
     Node *grandpa = father->parent;
     if (node == father->right && father == grandpa->left)
     {
-        rotateLeft2(tree, father);
+        rotateLeft(tree, father);
         node = node->left;
     }
     else if (node == father->left && father == grandpa->right)
     {
-        rotateRight2(tree, father);
+        rotateRight(tree, father);
         node = node->right;
     }
     insertCase4_2(tree, node);
 }
 
+/**
+ * Fixes the tree after inserting according to the casses written
+ * @param tree the tree which we entered into
+ * @param node the node which we inserted
+ */
 void fixInsert(RBTree *tree, Node* node)
 {
     Node *father = node->parent;
+    // CASE1: We inserted a root
     if (father == NULL)
     {
         node->color = BLACK;
         tree->root = node;
         return;
     }
+    // CASE 2: BLACK
     if (father->color == BLACK)
     {
         return;
@@ -237,21 +296,29 @@ void fixInsert(RBTree *tree, Node* node)
         insertCase3(tree, node);
         return;
     }
+    // CASE 4: father is red and uncle is black
     insertCase4(tree, node);
 
 }
 
+/**
+ * Algorithm which enters the given data to the tree, and also
+ * builds it our own node
+ * @param tree the tree to insert to
+ * @param data the data to insert
+ * @return true if worked else false
+ */
 int insertToRBTree(RBTree *tree, void *data)
 {
     if (tree == NULL || data == NULL)
     {
         return false;
     }
-    /**
+    
     if (RBTreeContains(tree, data) == true)
     {
         return false;
-    }*/
+    }
     // Now we know that the data isn't in the tree
     // find the location to enter it
     Node *node = CreateNode(data);
@@ -285,6 +352,11 @@ int insertToRBTree(RBTree *tree, void *data)
     return true;
 }
 
+/**
+ * swaps the values of the 2 nodes
+ * @param node1 the first node
+ * @param node2 the second node
+ */
 void swapValues(Node *node1, Node *node2)
 {
     void *temp = (void *)node1->data;
@@ -292,6 +364,11 @@ void swapValues(Node *node1, Node *node2)
     node2->data = temp;
 }
 
+/**
+ * gets the brother of the given node
+ * @param node the node of which to get its brother
+ * @return the brother
+ */
 Node *getBrother(const Node *node)
 {
     Node *father = node->parent;
@@ -306,6 +383,11 @@ Node *getBrother(const Node *node)
     return father->left;
 }
 
+/**
+ * finds the successor of the given node
+ * @param node the node of which to get its successor
+ * @return the successor
+ */
 Node *successor( Node *node)
 {
     Node *succ = node->right;
@@ -316,6 +398,11 @@ Node *successor( Node *node)
     return succ;
 }
 
+/**
+ * Corresponding to teh BST replace before we delete a node
+ * @param node the node to delete
+ * @return The node which we will be replacing with
+ */
 Node *BSTLikeReplace(Node *node)
 {
     if (node->left != NULL && node->right != NULL)
@@ -357,11 +444,11 @@ void fixBothBlack(RBTree *tree, Node *node)
             brother->color = BLACK;
             if (brother == brother->parent->left)
             {
-                rotateRight2(tree, father);
+                rotateRight(tree, father);
             }
             else
             {
-                rotateLeft2(tree, father);
+                rotateLeft(tree, father);
             }
             fixBothBlack(tree, node);
         }
@@ -376,13 +463,13 @@ void fixBothBlack(RBTree *tree, Node *node)
                     {
                         brother->left->color = brother->color;
                         brother->color = father->color;
-                        rotateRight2(tree, father);
+                        rotateRight(tree, father);
                     }
                     else
                     {
                         brother->left->color = father->color;
-                        rotateRight2(tree, brother);
-                        rotateLeft2(tree, father);
+                        rotateRight(tree, brother);
+                        rotateLeft(tree, father);
                     }
                 }
                 else
@@ -390,14 +477,14 @@ void fixBothBlack(RBTree *tree, Node *node)
                     if (brother == brother->parent->left)
                     {
                         brother->right->color = father->color;
-                        rotateLeft2(tree, brother);
-                        rotateRight2(tree, father);
+                        rotateLeft(tree, brother);
+                        rotateRight(tree, father);
                     }
                     else
                     {
                         brother->right->color = brother->color;
                         brother->color = father->color;
-                        rotateLeft2(tree, father);
+                        rotateLeft(tree, father);
                     }
                 }
                 father->color = BLACK;
