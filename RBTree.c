@@ -20,25 +20,18 @@ RBTree *newRBTree(CompareFunc compFunc, FreeFunc freeFunc)
     tree->size = 0;
     return tree;
 }
-typedef struct ProductExample
-{
-    char *name;
-    double price;
-} ProductExample;
+
 int RBTreeContains(const RBTree *tree, const void *data)
 {
     if (tree == NULL || data == NULL)
     {
         return false;
     }
-    ProductExample *first = (ProductExample *) tree->root->data;
-    ProductExample *second = (ProductExample *) tree->root->left->data;
-    ProductExample *third = (ProductExample *) tree->root->right->data;
-    ProductExample *fourth = (ProductExample *) tree->root->right->left->data;
     Node *root = tree->root;
     while(root != NULL)
     {
         int comp = tree->compFunc(root->data, data);
+
         if (comp == 0)
         {
             return true;
@@ -320,7 +313,7 @@ Node *getBrother(const Node *node)
     return father->left;
 }
 
-Node *successor(const Node *node)
+Node *successor( Node *node)
 {
     Node *succ = node->right;
     while (succ->left != NULL)
@@ -434,7 +427,7 @@ void fixBothBlack(RBTree *tree, Node *node)
 
 void freeNode(RBTree *tree, Node *node)
 {
-    tree->freeFunc(node->data);
+    //tree->freeFunc(node->data);
     free(node);
 }
 
@@ -545,11 +538,11 @@ int deleteFromRBTree(RBTree *tree, void *data)
     {
         return false;
     }
-    /**
+
     if (!RBTreeContains(tree, data))
     {
         return false;
-    }*/
+    }
     Node *delNode = getNode(tree, data);
     deleteNode(tree, delNode);
     tree->size -= 1;
