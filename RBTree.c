@@ -23,6 +23,10 @@ RBTree *newRBTree(CompareFunc compFunc, FreeFunc freeFunc)
 
 int RBTreeContains(const RBTree *tree, const void *data)
 {
+    if (tree == NULL || data == NULL)
+    {
+        return false;
+    }
     Node *root = tree->root;
     while(root != NULL)
     {
@@ -186,7 +190,7 @@ void insertCase3(RBTree *tree, Node *node)
     fixInsert(tree, grandpa);
 }
 
-void insertCase4_2(RBTree *tree, Node *node)
+void insertCase4_2(Node *node)
 {
     Node *father = node->parent;
     Node *grandpa = father->parent;
@@ -217,7 +221,7 @@ void insertCase4(RBTree *tree, Node *node)
         rotateRight(father);
         node = node->right;
     }
-    insertCase4_2(tree, node);
+    insertCase4_2(node);
 }
 
 void fixInsert(RBTree *tree, Node* node)
@@ -291,7 +295,7 @@ void swapValues(Node *node1, Node *node2)
     node2->data = temp;
 }
 
-Node *getBrother(Node *node)
+Node *getBrother(const Node *node)
 {
     Node *father = node->parent;
     if (father == NULL)
@@ -305,7 +309,7 @@ Node *getBrother(Node *node)
     return father->left;
 }
 
-Node *successor(Node *node)
+Node *successor(const Node *node)
 {
     Node *succ = node->right;
     while (succ->left != NULL)
@@ -419,7 +423,7 @@ void fixBothBlack(RBTree *tree, Node *node)
 
 void freeNode(RBTree *tree, Node *node)
 {
-    //tree->freeFunc(node->data);
+    tree->freeFunc(node->data);
     free(node);
 }
 
@@ -503,7 +507,7 @@ void deleteNode(RBTree *tree, Node *node)
     deleteNode(tree, replace);
 }
 
-Node *getNode(RBTree *tree, void *data)
+Node *getNode(RBTree *tree, const void *data)
 {
     Node *root = tree->root;
     while (root != NULL)
@@ -538,4 +542,57 @@ int deleteFromRBTree(RBTree *tree, void *data)
     deleteNode(tree, delNode);
     tree->size -= 1;
     return true;
+}
+
+int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
+{
+    if (root->left != NULL)
+    {
+        if (forEachRBTreeHelper(root->left, func, args) == false)
+        {
+            return false;
+        }
+    }
+    if (func(root, args) == false)
+    {
+        return false;
+    }
+    if (root->right != NULL)
+    {
+        if (forEachRBTreeHelper(root->right, func, args) == false)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+int forEachRBTree(const RBTree *tree, forEachFunc func, void *args)
+{
+    if (tree == NULL || func == NULL || args == NULL)
+    {
+        return false;
+    }
+    return forEachRBTreeHelper(tree->root, func, args);
+}
+
+void freeRBTreeHelper(RBTree *tree, Node *root)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+    freeRBTreeHelper(tree, root->left);
+    freeNode(tree, root);
+    freeRBTreeHelper(tree, root->right);
+}
+
+void freeRBTree(RBTree **tree)
+{
+    if (tree == NULL)
+    {
+        return;
+    }
+    freeRBTreeHelper(*tree, (*tree)->root);
+    free(*tree);
 }
