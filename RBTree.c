@@ -245,6 +245,10 @@ void fixInsert(RBTree *tree, Node* node)
 
 int insertToRBTree(RBTree *tree, void *data)
 {
+    if (tree == NULL || data == NULL)
+    {
+        return false;
+    }
     if (RBTreeContains(tree, data) == true)
     {
         return false;
@@ -282,8 +286,7 @@ int insertToRBTree(RBTree *tree, void *data)
 
 void swapValues(Node *node1, Node *node2)
 {
-    int *temp = (int *)node1->data;
-    int *temp2 = (int *)node2->data;
+    void *temp = (void *)node1->data;
     node1->data = node2->data;
     node2->data = temp;
 }
@@ -304,7 +307,7 @@ Node *getBrother(Node *node)
 
 Node *successor(Node *node)
 {
-    Node *succ = node;
+    Node *succ = node->right;
     while (succ->left != NULL)
     {
         succ = succ->left;
@@ -316,7 +319,7 @@ Node *BSTLikeReplace(Node *node)
 {
     if (node->left != NULL && node->right != NULL)
     {
-        return successor(node->right);
+        return successor(node);
     }
 
     if (node->left == NULL && node->right == NULL)
@@ -414,6 +417,12 @@ void fixBothBlack(RBTree *tree, Node *node)
     }
 }
 
+void freeNode(RBTree *tree, Node *node)
+{
+    //tree->freeFunc(node->data);
+    free(node);
+}
+
 void deleteNode(RBTree *tree, Node *node)
 {
     Node *replace = BSTLikeReplace(node);
@@ -454,8 +463,7 @@ void deleteNode(RBTree *tree, Node *node)
                 node->parent->right = NULL;
             }
         }
-        //free(node->data);
-        free(node);
+        freeNode(tree, node);
         return;
     }
 
@@ -466,8 +474,7 @@ void deleteNode(RBTree *tree, Node *node)
             node->data = replace->data;
             node->left = NULL;
             node->right = NULL;
-            //free(replace->data);
-            free(replace);
+            freeNode(tree, replace);
         }
         else
         {
@@ -479,8 +486,7 @@ void deleteNode(RBTree *tree, Node *node)
             {
                 father->right = replace;
             }
-            free(node->data);
-            free(node);
+            freeNode(tree, node);
             replace->parent = father;
             if (bothBlack == 1)
             {
@@ -520,6 +526,10 @@ Node *getNode(RBTree *tree, void *data)
 
 int deleteFromRBTree(RBTree *tree, void *data)
 {
+    if (tree == NULL || data == NULL)
+    {
+        return false;
+    }
     if (!RBTreeContains(tree, data))
     {
         return false;
@@ -527,5 +537,5 @@ int deleteFromRBTree(RBTree *tree, void *data)
     Node *delNode = getNode(tree, data);
     deleteNode(tree, delNode);
     tree->size -= 1;
-    return 1;
+    return true;
 }

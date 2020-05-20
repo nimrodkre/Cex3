@@ -115,6 +115,8 @@ int main()
     insertToRBTree(tree, products[0]);
     //insertToRBTree(tree, products[1]);
     deleteFromRBTree(tree, products[2]);
+    deleteFromRBTree(tree, products[3]);
+    deleteFromRBTree(tree, products[1]);
     printRBTree(tree->root);
 
 
