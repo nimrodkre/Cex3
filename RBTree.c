@@ -6,6 +6,7 @@
 #include "stdbool.h"
 
 void fixInsert(RBTree *tree, Node* node);
+void fixBothBlack(RBTree *tree, Node *node);
 
 /**
  * Builds a new RedBlack Tree object
@@ -422,6 +423,80 @@ Node *BSTLikeReplace(Node *node)
     return node->right;
 }
 
+/**
+ * in delete function when the brother is red, must fix up
+ * @param tree the tree
+ * @param node the node which we have a problem with its brother
+ */
+void brotherRedCase(RBTree *tree, Node *node)
+{
+    Node *brother = getBrother(node);
+    Node *father = node->parent;
+    father->color = RED;
+    brother->color = BLACK;
+    if (brother == brother->parent->left)
+    {
+        rotateRight(tree, father);
+    }
+    else
+    {
+        rotateLeft(tree, father);
+    }
+    fixBothBlack(tree, node);
+}
+
+/**
+ * in delete function when the son of the brother is red, must fix up
+ * @param tree the tree
+ * @param node the node which we have a problem with its brother
+ */
+void brotherLeftSonRedCase(RBTree *tree, Node *node)
+{
+    Node *brother = getBrother(node);
+    Node *father = node->parent;
+    if (brother == brother->parent->left)
+    {
+        brother->left->color = brother->color;
+        brother->color = father->color;
+        rotateRight(tree, father);
+    }
+    else
+    {
+        brother->left->color = father->color;
+        rotateRight(tree, brother);
+        rotateLeft(tree, father);
+    }
+}
+
+/**
+ * in delete function when the right son of the brother is red, must fix up
+ * @param tree the tree
+ * @param node the node which we have a problem with its brother
+ */
+void brotherRightSonRedCase(RBTree *tree, Node *node)
+{
+    Node *brother = getBrother(node);
+    Node *father = node->parent;
+    if (brother == brother->parent->left)
+    {
+        brother->right->color = father->color;
+        rotateLeft(tree, brother);
+        rotateRight(tree, father);
+    }
+    else
+    {
+        brother->right->color = brother->color;
+        brother->color = father->color;
+        rotateLeft(tree, father);
+    }
+}
+
+/**
+ * In delete as stated in the targil if we have 2 blacks in a row, we will
+ * have a problem when deleting. DB problem in other words
+ * @param tree the tree
+ * @param node the node which we want to take care of
+ */
 void fixBothBlack(RBTree *tree, Node *node)
 {
     if (node == tree->root)
@@ -440,17 +515,7 @@ void fixBothBlack(RBTree *tree, Node *node)
     {
         if (brother->color == RED)
         {
-            father->color = RED;
-            brother->color = BLACK;
-            if (brother == brother->parent->left)
-            {
-                rotateRight(tree, father);
-            }
-            else
-            {
-                rotateLeft(tree, father);
-            }
-            fixBothBlack(tree, node);
+            brotherRedCase(tree, node);
         }
         else
         {
@@ -459,38 +524,17 @@ void fixBothBlack(RBTree *tree, Node *node)
             {
                 if (brother->left != NULL && brother->left->color == RED)
                 {
-                    if (brother == brother->parent->left)
-                    {
-                        brother->left->color = brother->color;
-                        brother->color = father->color;
-                        rotateRight(tree, father);
-                    }
-                    else
-                    {
-                        brother->left->color = father->color;
-                        rotateRight(tree, brother);
-                        rotateLeft(tree, father);
-                    }
+                    brotherLeftSonRedCase(tree, node);
                 }
                 else
                 {
-                    if (brother == brother->parent->left)
-                    {
-                        brother->right->color = father->color;
-                        rotateLeft(tree, brother);
-                        rotateRight(tree, father);
-                    }
-                    else
-                    {
-                        brother->right->color = brother->color;
-                        brother->color = father->color;
-                        rotateLeft(tree, father);
-                    }
+                    brotherRightSonRedCase(tree, node);
                 }
                 father->color = BLACK;
             }
             else
             {
+                // brothers sons aren't RED!!!!!
                 brother->color = RED;
                 if (father->color == BLACK)
                 {
@@ -505,16 +549,106 @@ void fixBothBlack(RBTree *tree, Node *node)
     }
 }
 
+/**
+ * in charge of freeing the given node
+ * @param tree the tree
+ * @param node the node to free
+ */
 void freeNode(RBTree *tree, Node *node)
 {
-    //tree->freeFunc(node->data);
     free(node);
 }
 
-void deleteNode(RBTree *tree, Node *node)
+/**
+ * if we are similiar to bst leaf than we have a bit more work
+ * @param tree the tree from which to delete
+ * @param node  the node to delete
+ * @param bothBlack problem 3 from targil
+ */
+void BSTLikeLeaf(RBTree *tree, Node *node, int bothBlack)
 {
     Node *replace = BSTLikeReplace(node);
+    Node *father = node->parent;
+    if (node == tree->root)
+    {
+        node->data = replace->data;
+        node->left = NULL;
+        node->right = NULL;
+        freeNode(tree, replace);
+    }
+    else
+    {
+        if(node == father->left)
+        {
+            father->left = replace;
+        }
+        else
+        {
+            father->right = replace;
+        }
+        freeNode(tree, node);
+        replace->parent = father;
+        if (bothBlack == 1)
+        {
+            fixBothBlack(tree, replace);
+        }
+        else
+        {
+            replace->color = BLACK;
+        }
+    }
+}
+
+/**
+ * when deleting the case in which the given node has no successor to switch with
+ * @param tree the tree from which we will delete
+ * @param node the node to delete
+ * @param bothBlack - if node is black than we will have a bit more work
+ */
+void noSuccessor(RBTree *tree, Node *node, int bothBlack)
+{
+    if (node == tree->root)
+    {
+        tree->root = NULL;
+    }
+    else
+    {
+        if (bothBlack == 1)
+        {
+            fixBothBlack(tree, node);
+        }
+        else
+        {
+            Node *brother = getBrother(node);
+            if (brother != NULL)
+            {
+                brother->color = RED;
+            }
+        }
+
+        if (node == node->parent->left)
+        {
+            node->parent->left = NULL;
+        }
+        else
+        {
+            node->parent->right = NULL;
+        }
+    }
+    freeNode(tree, node);
+}
+
+/**
+ * function in charge of deleting a node in the tree
+ * @param tree the tree from which we want to delete
+ * @param node the node to delete
+ */
+void deleteNode(RBTree *tree, Node *node)
+{
+    // the node which we would replace with if it was a BST
+    Node *replace = BSTLikeReplace(node);
     int bothBlack = 0;
+    //check problem 3 from the targil delete lesson
     if ((replace == NULL || replace->color == BLACK) && (node->color == BLACK))
     {
         bothBlack = 1;
@@ -523,70 +657,15 @@ void deleteNode(RBTree *tree, Node *node)
 
     if (replace == NULL)
     {
-        if (node == tree->root)
-        {
-            tree->root = NULL;
-        }
-        else
-        {
-            if (bothBlack == 1)
-            {
-                fixBothBlack(tree, node);
-            }
-            else
-            {
-                Node *brother = getBrother(node);
-                if (brother != NULL)
-                {
-                    brother->color = RED;
-                }
-            }
-
-            if (node == node->parent->left)
-            {
-                node->parent->left = NULL;
-            }
-            else
-            {
-                node->parent->right = NULL;
-            }
-        }
-        freeNode(tree, node);
+        noSuccessor(tree, node, bothBlack);
         return;
     }
-
     if (node->left == NULL || node->right == NULL)
     {
-        if (node == tree->root)
-        {
-            node->data = replace->data;
-            node->left = NULL;
-            node->right = NULL;
-            freeNode(tree, replace);
-        }
-        else
-        {
-            if(node == father->left)
-            {
-                father->left = replace;
-            }
-            else
-            {
-                father->right = replace;
-            }
-            freeNode(tree, node);
-            replace->parent = father;
-            if (bothBlack == 1)
-            {
-                fixBothBlack(tree, replace);
-            }
-            else
-            {
-                replace->color = BLACK;
-            }
-        }
+        BSTLikeLeaf(tree, node, bothBlack);
         return;
     }
+    // well we have 2 songs, and have to do more work
     swapValues(node, replace);
     deleteNode(tree, replace);
 }
