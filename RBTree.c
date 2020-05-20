@@ -479,7 +479,7 @@ void fixBothBlack(RBTree *tree, Node *node)
 
 void freeNode(RBTree *tree, Node *node)
 {
-    //tree->freeFunc(node->data);
+    tree->freeFunc(node->data);
     free(node);
 }
 
