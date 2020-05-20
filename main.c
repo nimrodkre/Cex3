@@ -108,11 +108,11 @@ int main()
 {
     int **products = getProducts();
     RBTree *tree = newRBTree(productComparatorByName, productFree);
-    insertToRBTree(tree, products[2]);
-    insertToRBTree(tree, products[3]);
-    insertToRBTree(tree, products[4]);
-    insertToRBTree(tree, products[0]);
-    deleteFromRBTree(tree, products[4]);
+    insertToRBTree(tree, products[2]);//599
+    insertToRBTree(tree, products[3]);//499
+    insertToRBTree(tree, products[4]);//299
+    insertToRBTree(tree, products[0]);//1499
+    deleteFromRBTree(tree, products[4]);//299
     printRBTree(tree->root);
     /**int i = 0;
     for (i = 0; i < 6; i++)

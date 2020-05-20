@@ -63,6 +63,58 @@ Node *CreateNode(void *data)
     return node;
 }
 
+void rotationChangePlace(Node *pivot, Node *newParent)
+{
+    if (pivot->parent != NULL)
+    {
+        if (pivot == pivot->parent->left)
+        {
+            pivot->parent->left = newParent;
+        }
+        else
+        {
+            pivot->parent->right = newParent;
+        }
+    }
+    newParent->parent = pivot->parent;
+    pivot->parent = newParent;
+}
+
+void rotateLeft2(RBTree *tree, Node *pivot)
+{
+    Node *son = pivot->right;
+    if (pivot == tree->root)
+    {
+        tree->root = son;
+    }
+
+    rotationChangePlace(pivot, son);
+    pivot->right = son->left;
+    if (son->left != NULL)
+    {
+        son->left->parent = pivot;
+    }
+    son->left = pivot;
+}
+
+void rotateRight2(RBTree *tree, Node *pivot)
+{
+    Node *son = pivot->left;
+
+    if (pivot == tree->root)
+    {
+        tree->root = son;
+    }
+
+    rotationChangePlace(pivot, son);
+    pivot->left = son->right;
+    if (son->right != NULL)
+    {
+        son->right->parent = pivot;
+    }
+    son->right = pivot;
+}
+
 void rotateLeft(Node *pivot)
 {
     Node *son = pivot->right;
@@ -364,11 +416,11 @@ void fixBothBlack(RBTree *tree, Node *node)
             brother->color = BLACK;
             if (brother == brother->parent->left)
             {
-                rotateRight(father);
+                rotateRight2(tree, father);
             }
             else
             {
-                rotateLeft(father);
+                rotateLeft2(tree, father);
             }
             fixBothBlack(tree, node);
         }
@@ -383,13 +435,13 @@ void fixBothBlack(RBTree *tree, Node *node)
                     {
                         brother->left->color = brother->color;
                         brother->color = father->color;
-                        rotateRight(father);
+                        rotateRight2(tree, father);
                     }
                     else
                     {
                         brother->left->color = father->color;
-                        rotateRight(brother);
-                        rotateLeft(father);
+                        rotateRight2(tree, brother);
+                        rotateLeft2(tree, father);
                     }
                 }
                 else
@@ -397,14 +449,14 @@ void fixBothBlack(RBTree *tree, Node *node)
                     if (brother == brother->parent->left)
                     {
                         brother->right->color = father->color;
-                        rotateLeft(brother);
-                        rotateRight(father);
+                        rotateLeft2(tree, brother);
+                        rotateRight2(tree, father);
                     }
                     else
                     {
                         brother->right->color = brother->color;
                         brother->color = father->color;
-                        rotateLeft(father);
+                        rotateLeft2(tree, father);
                     }
                 }
                 father->color = BLACK;
