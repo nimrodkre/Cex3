@@ -554,7 +554,7 @@ void fixBothBlack(RBTree *tree, Node *node)
  * @param tree the tree
  * @param node the node to free
  */
-void freeNode(RBTree *tree, Node *node)
+void freeNode(Node *node)
 {
     free(node);
 }
@@ -635,7 +635,7 @@ void noSuccessor(RBTree *tree, Node *node, int bothBlack)
             node->parent->right = NULL;
         }
     }
-    freeNode(tree, node);
+    freeNode(node);
 }
 
 /**
@@ -653,7 +653,6 @@ void deleteNode(RBTree *tree, Node *node)
     {
         bothBlack = 1;
     }
-    Node *father = node->parent;
 
     if (replace == NULL)
     {
@@ -670,6 +669,12 @@ void deleteNode(RBTree *tree, Node *node)
     deleteNode(tree, replace);
 }
 
+/**
+ * Finds the node and returns it with the given data
+ * @param tree the tree to delete from
+ * @param data the data to delete
+ * @return the node which corresponds to the given data
+ */
 Node *getNode(RBTree *tree, const void *data)
 {
     Node *root = tree->root;
@@ -691,6 +696,12 @@ Node *getNode(RBTree *tree, const void *data)
     return NULL;
 }
 
+/**
+ * deletes the given data from the tree
+ * @param tree the tree to delete from
+ * @param data the data to delete
+ * @return 0 if not able to else 1
+ */
 int deleteFromRBTree(RBTree *tree, void *data)
 {
     if (tree == NULL || data == NULL)
@@ -708,6 +719,13 @@ int deleteFromRBTree(RBTree *tree, void *data)
     return true;
 }
 
+/**
+ * recursive function which does the given function on each node of the tree
+ * @param root the current node to do the function on
+ * @param func the function to do on each node
+ * @param args the arguments to pass to function
+ * @return 1 if able to else 0
+ */
 int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
 {
     if (root->left != NULL)
@@ -731,6 +749,13 @@ int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
     return true;
 }
 
+/**
+ * runs on all nodes and does the function
+ * @param tree the tree
+ * @param func function to use
+ * @param args the arguments to pass to the function
+ * @return 1 if good else 0
+ */
 int forEachRBTree(const RBTree *tree, forEachFunc func, void *args)
 {
     if (tree == NULL || func == NULL || args == NULL)
@@ -740,6 +765,11 @@ int forEachRBTree(const RBTree *tree, forEachFunc func, void *args)
     return forEachRBTreeHelper(tree->root, func, args);
 }
 
+/**
+ * frees all of the tree
+ * @param tree the tree to work on
+ * @param root the node to free
+ */
 void freeRBTreeHelper(RBTree *tree, Node *root)
 {
     if (root == NULL)
@@ -747,10 +777,14 @@ void freeRBTreeHelper(RBTree *tree, Node *root)
         return;
     }
     freeRBTreeHelper(tree, root->left);
-    freeNode(tree, root);
     freeRBTreeHelper(tree, root->right);
+    freeNode(root);
 }
 
+/**
+ * frees all of the tree
+ * @param tree the tree to free
+ */
 void freeRBTree(RBTree **tree)
 {
     if (tree == NULL)
