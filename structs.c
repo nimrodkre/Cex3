@@ -73,3 +73,61 @@ int vectorCompare1By1(const void *a, const void *b)
     }
     return SAME;
 }
+
+void freeVector(void *pVector)
+{
+    Vector *vec = (Vector *)pVector;
+    free(vec->vector);
+}
+
+double getNorm(const Vector *vec)
+{
+    double sum = 0;
+    int i = 0;
+    for (i = 0; i < vec->len; i++)
+    {
+        sum += vec->vector[i] * vec->vector[i];
+    }
+    return sum;
+}
+
+int copyIfNormIsLarger(const void *pVector, void *pMaxVector)
+{
+    if (pVector == NULL)
+    {
+        return false;
+    }
+    Vector *p = (Vector *)pVector;
+    double pNorm = getNorm(p);
+    Vector *max = (Vector *)pMaxVector;
+    double maxNorm = getNorm(max);
+    if (pNorm > maxNorm)
+    {
+        memcpy(pMaxVector, pVector, sizeof(Vector));
+    }
+    return true;
+}
+
+void findMaxNormVecHelper(Node *root, Vector *maxVec)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+    Vector *currVec = (Vector *)root->data;
+    copyIfNormIsLarger(currVec, maxVec);
+    findMaxNormVecHelper(root->left, maxVec);
+    findMaxNormVecHelper(root->right, maxVec);
+}
+
+Vector *findMaxNormVectorInTree(RBTree *tree)
+{
+    if (tree == NULL)
+    {
+        return NULL;
+    }
+    Vector *maxVec = (Vector *)malloc(sizeof(Vector));
+    maxVec = (Vector *)(tree->root->data);
+    findMaxNormVecHelper(tree->root, maxVec);
+    return maxVec;
+}

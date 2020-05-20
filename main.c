@@ -5,14 +5,21 @@
 #ifndef TA_EX3_PRODUCTEXAMPLE_C
 #define TA_EX3_PRODUCTEXAMPLE_C
 
-#include "utilities/RBUtilities.h"
+#include "RBTree.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "utilities/RBUtilities.h"
 
 #define LESS (-1)
 #define EQUAL (0)
 #define GREATER (1)
+
+typedef struct ProductExample
+{
+    char *name;
+    double price;
+} ProductExample;
 
 /**
  * Comparator for ProductExample
@@ -22,13 +29,14 @@
  */
 int productComparatorByName(const void *a, const void *b)
 {
-    int *first = (int *) a;
-    int *second = (int *) b;
-    if (*first - *second < 0)
+    ProductExample *first = (ProductExample *) a;
+    ProductExample *second = (ProductExample *) b;
+    double diff = strcmp(first->name, second->name);
+    if (diff < 0)
     {
         return LESS;
     }
-    else if (*first - *second > 0)
+    else if (diff > 0)
     {
         return GREATER;
     }
@@ -40,8 +48,8 @@ int productComparatorByName(const void *a, const void *b)
 
 void productFree(void *a)
 {
-    int *pProduct = (int *) a;
-    free(pProduct);
+    ProductExample *pProduct = (ProductExample *) a;
+    free(pProduct->name);
     free(a);
 }
 
@@ -51,42 +59,64 @@ void productFree(void *a)
  * @param null required argument for typedef
  * @return
  */
-char  *printProduct(void *pProduct)
+int printProduct(const void *pProduct, void *null)
 {
-    char *str = (char *)malloc((10));
-    int *product = (int *) pProduct;
-    sprintf(str, "%d", *product);
+    if (null != NULL)
+    {
+        return 0;
+    }
+    ProductExample *product = (ProductExample *) pProduct;
+    printf("Name: %s.\t\tPrice: %.2f\n", product->name, product->price);
 
-    return str;
+    return 1;
 }
 
 /**
  *
  * @return products for tests
  */
-int **getProducts()
+ProductExample **getProducts()
 {
+    char *name0 = (char *) malloc(sizeof(char) * (20));
+    char *name1 = (char *) malloc(sizeof(char) * (20));
+    char *name2 = (char *) malloc(sizeof(char) * (20));
+    char *name3 = (char *) malloc(sizeof(char) * (20));
+    char *name4 = (char *) malloc(sizeof(char) * (20));
+    char *name5 = (char *) malloc(sizeof(char) * (20));
 
-    int **products = (int **) malloc(sizeof(int *) * 6);
+    strcpy(name0, "MacBook Pro");
+    strcpy(name1, "iPod");
+    strcpy(name2, "iPhone");
+    strcpy(name3, "iPad");
+    strcpy(name4, "Apple Watch");
+    strcpy(name5, "Apple TV");
 
-    products[0] = (int *) malloc(sizeof(int));
-    products[1] = (int *) malloc(sizeof(int));
-    products[2] = (int *) malloc(sizeof(int));
-    products[3] = (int *) malloc(sizeof(int));
-    products[4] = (int *) malloc(sizeof(int));
-    products[5] = (int *) malloc(sizeof(int));
+    ProductExample **products = (ProductExample **) malloc(sizeof(ProductExample *) * 6);
 
-    *products[0]= 1499;
-    *products[1] = 199;
-    *products[2] = 599;
-    *products[3] = 499;
-    *products[4] = 299;
-    *products[5] = 199;
+    products[0] = (ProductExample *) malloc(sizeof(ProductExample));
+    products[1] = (ProductExample *) malloc(sizeof(ProductExample));
+    products[2] = (ProductExample *) malloc(sizeof(ProductExample));
+    products[3] = (ProductExample *) malloc(sizeof(ProductExample));
+    products[4] = (ProductExample *) malloc(sizeof(ProductExample));
+    products[5] = (ProductExample *) malloc(sizeof(ProductExample));
+
+    products[0]->name = name0;
+    products[0]->price = 1499;
+    products[1]->name = name1;
+    products[1]->price = 199;
+    products[2]->name = name2;
+    products[2]->price = 599;
+    products[3]->name = name3;
+    products[3]->price = 499;
+    products[4]->name = name4;
+    products[4]->price = 299;
+    products[5]->name = name5;
+    products[5]->price = 199;
 
     return products;
 
 }
-/**
+
 void freeResources(RBTree **tree, ProductExample ***products)
 {
     freeRBTree(tree);
@@ -94,7 +124,7 @@ void freeResources(RBTree **tree, ProductExample ***products)
     productFree((*products)[5]);
     free(*products);
 }
-**/
+
 void assertion(int passed, int assertion_num, char *msg)
 {
     if (!passed)
@@ -104,16 +134,21 @@ void assertion(int passed, int assertion_num, char *msg)
 
 }
 
+char *func(void *prod)
+{
+    ProductExample *product = (ProductExample *)prod;
+    return product->name;
+}
+
 int main()
 {
-    int **products = getProducts();
+    ProductExample **products = getProducts();
     RBTree *tree = newRBTree(productComparatorByName, productFree);
-    insertToRBTree(tree, products[2]);//599
-    insertToRBTree(tree, products[3]);//499
-    insertToRBTree(tree, products[4]);//299
-    insertToRBTree(tree, products[0]);//1499
-    deleteFromRBTree(tree, products[4]);//299
-    printRBTree(tree->root);
+    insertToRBTree(tree, products[2]);
+    insertToRBTree(tree, products[3]);
+    insertToRBTree(tree, products[4]);
+    insertToRBTree(tree, products[0]);
+    viewTree(tree, func);
     /**int i = 0;
     for (i = 0; i < 6; i++)
     {
@@ -143,7 +178,7 @@ int main()
     forEachRBTree(tree, printProduct, NULL);
     freeResources(&tree, &products);
     printf("test passed\n");
-    return 0;**/
+    return 0;
 }
 
 
