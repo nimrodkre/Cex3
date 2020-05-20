@@ -20,13 +20,21 @@ RBTree *newRBTree(CompareFunc compFunc, FreeFunc freeFunc)
     tree->size = 0;
     return tree;
 }
-
+typedef struct ProductExample
+{
+    char *name;
+    double price;
+} ProductExample;
 int RBTreeContains(const RBTree *tree, const void *data)
 {
     if (tree == NULL || data == NULL)
     {
         return false;
     }
+    ProductExample *first = (ProductExample *) tree->root->data;
+    ProductExample *second = (ProductExample *) tree->root->left->data;
+    ProductExample *third = (ProductExample *) tree->root->right->data;
+    ProductExample *fourth = (ProductExample *) tree->root->right->left->data;
     Node *root = tree->root;
     while(root != NULL)
     {
@@ -207,7 +215,7 @@ void insertCase4_2(Node *node)
     grandpa->color = RED;
 }
 
-void insertCase4(RBTree *tree, Node *node)
+void insertCase4(Node *node)
 {
     Node *father = node->parent;
     Node *grandpa = father->parent;
@@ -243,7 +251,7 @@ void fixInsert(RBTree *tree, Node* node)
         insertCase3(tree, node);
         return;
     }
-    insertCase4(tree, node);
+    insertCase4(node);
 
 }
 
@@ -253,13 +261,15 @@ int insertToRBTree(RBTree *tree, void *data)
     {
         return false;
     }
+    /**
     if (RBTreeContains(tree, data) == true)
     {
         return false;
-    }
+    }*/
     // Now we know that the data isn't in the tree
     // find the location to enter it
     Node *node = CreateNode(data);
+
     if (node == NULL)
     {
         return false;
@@ -284,6 +294,7 @@ int insertToRBTree(RBTree *tree, void *data)
     node->parent = father;
 
     fixInsert(tree, node);
+
     tree->size += 1;
     return true;
 }
@@ -534,10 +545,11 @@ int deleteFromRBTree(RBTree *tree, void *data)
     {
         return false;
     }
+    /**
     if (!RBTreeContains(tree, data))
     {
         return false;
-    }
+    }*/
     Node *delNode = getNode(tree, data);
     deleteNode(tree, delNode);
     tree->size -= 1;
