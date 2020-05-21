@@ -728,25 +728,25 @@ int deleteFromRBTree(RBTree *tree, void *data)
  */
 int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
 {
-    if (root->left != NULL)
+    if (root == NULL)
     {
-        if (forEachRBTreeHelper(root->left, func, args) == false)
-        {
-            return false;
-        }
+        return true;
+    }
+
+    return forEachRBTreeHelper(root->left, func, args) && func(root->data, args) && forEachRBTreeHelper(root->right, func, args);
+    /**if (forEachRBTreeHelper(root->left, func, args) == false)
+    {
+        return false;
     }
     if (func(root, args) == false)
     {
         return false;
     }
-    if (root->right != NULL)
+    if (forEachRBTreeHelper(root->right, func, args) == false)
     {
-        if (forEachRBTreeHelper(root->right, func, args) == false)
-        {
-            return false;
-        }
+        return false;
     }
-    return true;
+    return true;*/
 }
 
 /**
@@ -758,7 +758,7 @@ int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
  */
 int forEachRBTree(const RBTree *tree, forEachFunc func, void *args)
 {
-    if (tree == NULL || func == NULL || args == NULL)
+    if (tree == NULL || func == NULL)
     {
         return false;
     }
