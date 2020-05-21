@@ -554,8 +554,9 @@ void fixBothBlack(RBTree *tree, Node *node)
  * @param tree the tree
  * @param node the node to free
  */
-void freeNode(Node *node)
+void freeNode(RBTree *tree, Node *node)
 {
+    tree->freeFunc(node->data);
     free(node);
 }
 
@@ -574,7 +575,7 @@ void BSTLikeLeaf(RBTree *tree, Node *node, int bothBlack)
         node->data = replace->data;
         node->left = NULL;
         node->right = NULL;
-        freeNode(replace);
+        freeNode(tree, replace);
     }
     else
     {
@@ -586,7 +587,7 @@ void BSTLikeLeaf(RBTree *tree, Node *node, int bothBlack)
         {
             father->right = replace;
         }
-        freeNode(node);
+        freeNode(tree, node);
         replace->parent = father;
         if (bothBlack == 1)
         {
@@ -635,7 +636,7 @@ void noSuccessor(RBTree *tree, Node *node, int bothBlack)
             node->parent->right = NULL;
         }
     }
-    freeNode(node);
+    freeNode(tree, node);
 }
 
 /**
@@ -733,20 +734,9 @@ int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
         return true;
     }
 
-    return forEachRBTreeHelper(root->left, func, args) && func(root->data, args) && forEachRBTreeHelper(root->right, func, args);
-    /**if (forEachRBTreeHelper(root->left, func, args) == false)
-    {
-        return false;
-    }
-    if (func(root, args) == false)
-    {
-        return false;
-    }
-    if (forEachRBTreeHelper(root->right, func, args) == false)
-    {
-        return false;
-    }
-    return true;*/
+    return forEachRBTreeHelper(root->left, func, args) && func(root->data, args)
+    && forEachRBTreeHelper(root->right, func, args);
+
 }
 
 /**
@@ -778,7 +768,7 @@ void freeRBTreeHelper(RBTree *tree, Node *root)
     }
     freeRBTreeHelper(tree, root->left);
     freeRBTreeHelper(tree, root->right);
-    freeNode(root);
+    freeNode(tree, root);
 }
 
 /**
