@@ -573,8 +573,8 @@ void BSTLikeLeaf(RBTree *tree, Node *node, int bothBlack)
     Node *father = node->parent;
     if (node == tree->root)
     {
-        //swapValues(node, replace);
-        replace->data = node->data;
+        swapValues(node, replace);
+        //replace->data = node->data;
         node->left = NULL;
         node->right = NULL;
         freeNode(tree, replace);

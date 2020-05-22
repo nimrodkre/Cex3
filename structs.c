@@ -93,7 +93,7 @@ double getNorm(const Vector *vec)
 
 int copyIfNormIsLarger(const void *pVector, void *pMaxVector)
 {
-    if (pVector == NULL)
+    if (pVector == NULL || pMaxVector == NULL)
     {
         return false;
     }
