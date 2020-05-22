@@ -315,7 +315,7 @@ int insertToRBTree(RBTree *tree, void *data)
     {
         return false;
     }
-    
+
     if (RBTreeContains(tree, data) == true)
     {
         return false;
@@ -558,6 +558,7 @@ void freeNode(RBTree *tree, Node *node)
 {
     tree->freeFunc(node->data);
     free(node);
+    node = NULL;
 }
 
 /**
@@ -572,7 +573,8 @@ void BSTLikeLeaf(RBTree *tree, Node *node, int bothBlack)
     Node *father = node->parent;
     if (node == tree->root)
     {
-        node->data = replace->data;
+        //swapValues(node, replace);
+        replace->data = node->data;
         node->left = NULL;
         node->right = NULL;
         freeNode(tree, replace);
@@ -709,7 +711,6 @@ int deleteFromRBTree(RBTree *tree, void *data)
     {
         return false;
     }
-
     if (!RBTreeContains(tree, data))
     {
         return false;
@@ -735,7 +736,7 @@ int forEachRBTreeHelper(const Node *root, forEachFunc func, void *args)
     }
 
     return forEachRBTreeHelper(root->left, func, args) && func(root->data, args)
-    && forEachRBTreeHelper(root->right, func, args);
+           && forEachRBTreeHelper(root->right, func, args);
 
 }
 
